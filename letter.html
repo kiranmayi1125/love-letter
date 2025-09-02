@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Love Letter Envelope</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Great+Vibes&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#faf6f1;
+      --ink:#3b2e2a;
+      --envelope:#fff;
+      --envelope-edge:#e7d8c9;
+      --seal:#b22222;
+      --accent:#e6b8b8;
+      --shadow: 0 20px 40px rgba(0,0,0,.14), 0 6px 18px rgba(0,0,0,.08);
+    }
+    *{ box-sizing: border-box; }
+    html,body{
+      height:100%;
+      margin:0;
+      background: radial-gradient(1200px 800px at 80% -20%, #fff 0, #fff0 60%),
+                  radial-gradient(1200px 800px at 0% 120%, #fff 0, #fff0 50%),
+                  var(--bg);
+      color:var(--ink);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    .wrap{
+      min-height:100dvh;
+      display:grid;
+      place-items:center;
+      padding:36px 18px 60px;
+    }
+
+    .title{
+      text-align:center;
+      margin-bottom:18px;
+      line-height:1.1;
+    }
+    .title h1{ font-family: "Great Vibes", cursive; font-size: clamp(36px, 6vw, 64px); margin:0 0 4px; }
+    .title p{ font-size: clamp(14px, 2.3vw, 16px); opacity:.8; margin:0; }
+
+    /* Envelope Stage */
+    .stage{
+      position:relative;
+      width:min(92vw, 520px);
+      aspect-ratio: 4 / 3;
+      display:grid;
+      place-items:center;
+      perspective: 1400px;
+      user-select:none;
+    }
+
+    /* Hidden checkbox to toggle open/close */
+    #open{
+      position:absolute; inset:0; opacity:0; pointer-events:auto; cursor:pointer;
+    }
+
+    .envelope{
+      position:relative;
+      width:100%; height:100%;
+      display:grid; place-items:center;
+      filter: drop-shadow(0 40px 50px rgba(0,0,0,.08));
+    }
+
+    /* Envelope base (pocket) */
+    .pocket{
+      position:absolute; inset:18% 10% 12% 10%;
+      background: linear-gradient(#fff, #f7f2ec);
+      border:1.5px solid var(--envelope-edge);
+      border-top:none;
+      border-radius:0 0 18px 18px;
+      overflow:hidden;
+    }
+    /* Side triangles */
+    .pocket::before, .pocket::after{
+      content:""; position:absolute; top:0; width:50%; height:100%;
+      background: linear-gradient(#fff, #f7f2ec);
+      border-bottom:1.5px solid var(--envelope-edge);
+    }
+    .pocket::before{ left:0; transform:skewX(30deg) translateX(-12%); transform-origin: top left; border-right:1.5px solid var(--envelope-edge); }
+    .pocket::after{ right:0; transform:skewX(-30deg) translateX(12%); transform-origin: top right; border-left:1.5px solid var(--envelope-edge); }
+
+    /* Bottom triangle */
+    .bottom{
+      position:absolute; left:10%; right:10%; bottom:12%; height:52%;
+      background: linear-gradient(#fff, #f7f2ec);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      border-left:1.5px solid var(--envelope-edge);
+      border-right:1.5px solid var(--envelope-edge);
+      border-bottom:1.5px solid var(--envelope-edge);
+      z-index:2;
+    }
+
+    /* Top flap */
+    .flap{
+      position:absolute; left:10%; right:10%; top:18%; height:52%;
+      background: linear-gradient(#fff, #f7f2ec);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      border:1.5px solid var(--envelope-edge);
+      border-bottom:none;
+      transform-origin: top center;
+      transform: rotateX(0deg);
+      transition: transform 900ms cubic-bezier(.2,.9,.1,1);
+      z-index:6;
+      box-shadow: inset 0 -20px 35px rgba(0,0,0,.07);
+    }
+
+    /* Wax seal */
+    .seal{
+      position:absolute; top:46%; left:50%; transform:translate(-50%,-50%);
+      width:64px; height:64px; border-radius:50%;
+      background: radial-gradient(120% 120% at 30% 30%, #ffd7d7 0, #eaa 35%, #c33 65%, #811 100%);
+      border:2px solid rgba(0,0,0,.08);
+      display:grid; place-items:center; color:#fff; font-size:26px;
+      box-shadow: var(--shadow);
+      z-index:7;
+      transition: transform 700ms ease, opacity 700ms ease;
+    }
+    .seal::after{
+      content:""; position:absolute; inset:-10px; border-radius:50%;
+      box-shadow: inset 0 8px 16px rgba(255,255,255,.65), inset 0 -10px 18px rgba(0,0,0,.25);
+      pointer-events:none;
+    }
+
+    /* Letter */
+    .letter{
+      position:absolute; left:14%; right:14%; bottom:10%; top:28%;
+      background: repeating-linear-gradient(#fff, #fff 28px, #fff7f7 28px, #fff7f7 29px);
+      border:1px solid #eadfce; border-radius:8px; padding:22px 22px 26px;
+      box-shadow: 0 12px 22px rgba(0,0,0,.08);
+      transform: translateY(30%);
+      transition: transform 900ms cubic-bezier(.2,.9,.1,1), opacity 600ms ease;
+      z-index:3;
+      opacity:0; /* hidden initially */
+    }
+
+    .letter h2{ font-family:"Playfair Display", serif; margin:0 0 8px; font-weight:700; font-size:clamp(18px, 3vw, 24px); }
+    .letter .sig{ font-family:"Great Vibes", cursive; font-size: clamp(26px, 5vw, 40px); margin-top:10px; }
+    .letter p{ margin: 8px 0; font-size:clamp(14px, 2.5vw, 16px); line-height:1.6; color:#3a2c27; }
+
+    /* Hint */
+    .hint{ text-align:center; margin-top:14px; font-size:14px; opacity:.7; }
+
+    /* Open state */
+    #open:checked ~ .envelope .flap{ transform: rotateX(180deg); }
+    #open:checked ~ .envelope .letter{ transform: translateY(-32%); opacity:1; }
+    #open:checked ~ .envelope .seal{ transform: translate(-50%,-50%) scale(.9) rotate(-8deg); opacity:.2; }
+
+    /* Focus styles for accessibility */
+    #open:focus-visible ~ .envelope{ outline: 3px dashed #b54; outline-offset: 6px; }
+
+    /* Floating hearts on open */
+    .hearts{
+      position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:8;
+    }
+    .heart{ position:absolute; bottom:18%; left:50%; width:14px; height:14px; transform:translateX(-50%) rotate(45deg) scale(.9); opacity:0; }
+    .heart::before, .heart::after{ content:""; position:absolute; width:100%; height:100%; background: var(--accent); border-radius:50%; }
+    .heart::before{ left:-50%; }
+    .heart::after{ top:-50%; }
+
+    @keyframes float {
+      0% { transform: translate(-50%, 0) rotate(45deg) scale(.6); opacity:0; }
+      10%{ opacity:1; }
+      100%{ transform: translate(var(--x, -50%), -180%) rotate(45deg) scale(1.2); opacity:0; }
+    }
+
+    #open:checked ~ .hearts .heart{ animation: float 2200ms ease-out var(--delay, 0ms) forwards; }
+
+    @media (max-width: 480px){
+      .seal{ width:56px; height:56px; font-size:22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">
+      <h1>Open Me, My Heart</h1>
+      <p>Click or tap the envelope to reveal the letter inside.</p>
+    </div>
+
+    <div class="stage" aria-label="just for you ❤️">
+      <input id="open" type="checkbox" aria-label="Open letter" />
+
+      <label for="open" class="envelope" role="button" aria-pressed="false">
+        <div class="flap" aria-hidden="true"></div>
+        <div class="pocket" aria-hidden="true"></div>
+        <div class="bottom" aria-hidden="true"></div>
+
+        <div class="letter" role="article" aria-live="polite">
+          <h2>My love,</h2>
+          <p>
+            Can you believe it’s already been a year? Sometimes it feels like we just started, and
+            sometimes it feels like I’ve known you forever. This whole year with you has been the most
+            beautiful part of my life.
+          </p>
+          <p>
+            Since the day we started — 24th April 2024 — my world has been different. You gave me
+            so many memories, little and big, and every single one of them is precious to me. And
+            even though you left for your job on 25th April 2025, and distance has come between us,
+            it hasn’t taken away what we share. If anything, it’s shown me how strong this bond really
+            is.
+          </p>
+          <p>
+            I miss you every day, but I also carry you with me every day. The calls, the texts, even the
+            quiet moments when I just think of you — they remind me that love doesn’t need
+            closeness to stay alive. With you, even miles apart, I feel safe, I feel loved, I feel complete.
+          </p>
+          <p>
+            I’m so thankful for you — for your patience, your care, and the way you somehow always
+            know how to make me feel yours. Loving you feels natural, like breathing, and I don’t ever
+            want to imagine my days without you.
+          </p>
+          <p>
+            One year down, and a lifetime to go — and I can’t wait for the day when distance won’t
+            matter, when I can hold your hand again and not let go.
+          </p>
+          <div class="sig">Always yours,</div>
+          <div class="sig">— ❤️</div>
+        </div>
+
+        <div class="seal" aria-hidden="true"><span>❤</span></div>
+      </label>
+
+      <div class="hearts" aria-hidden="true">
+        <div class="heart" style="--x:-80%; --delay:0ms"></div>
+        <div class="heart" style="--x:-20%; --delay:120ms"></div>
+        <div class="heart" style="--x:-50%; --delay:240ms"></div>
+        <div class="heart" style="--x:10%;  --delay:360ms"></div>
+        <div class="heart" style="--x:40%;  --delay:500ms"></div>
+        <div class="heart" style="--x:-10%; --delay:720ms"></div>
+        <div class="heart" style="--x:70%;  --delay:920ms"></div>
+      </div>
+</body>
+</html>
